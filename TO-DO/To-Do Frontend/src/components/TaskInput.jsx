@@ -54,7 +54,7 @@ const TaskInput = ({ input, setInput, date, setDate, handleAdd }) => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 mb-8 items-center justify-center w-full">
+    <div className="flex flex-col md:flex-row gap-4 mb-8 items-center justify-center w-full flex-wrap">
       <input
         type="text"
         className="flex-1 bg-white/90 rounded-xl border border-blue-200 shadow px-5 py-3 text-lg focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none transition"
@@ -62,9 +62,9 @@ const TaskInput = ({ input, setInput, date, setDate, handleAdd }) => {
         value={input}
         onChange={e => setInput(e.target.value)}
       />
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col md:flex-row items-center gap-4 flex-grow">
         {/* Date Picker Group */}
-        <div className="flex gap-2 px-4 py-2 rounded-2xl bg-white/40 backdrop-blur-md shadow border border-blue-100 items-center">
+        <div className="flex gap-2 px-4 py-2 rounded-2xl bg-white/40 backdrop-blur-md shadow border border-blue-100 items-center flex-1">
           <select value={day} onChange={e => handleDateChange('day', e.target.value)} className="appearance-none rounded-lg border-none bg-transparent px-2 py-1 focus:ring-2 focus:ring-indigo-200 pr-4" style={{backgroundImage:'none'}}>
             {days.map(d => <option key={d} value={d}>{d}</option>)}
           </select>
@@ -82,7 +82,7 @@ const TaskInput = ({ input, setInput, date, setDate, handleAdd }) => {
           />
         </div>
         {/* Time Picker Roller */}
-        <div className="flex items-center px-4 py-2 rounded-full bg-gradient-to-br from-white/70 to-cyan-100/70 shadow-inner border border-cyan-200 backdrop-blur-md">
+        <div className="flex items-center px-4 py-2 rounded-full bg-gradient-to-br from-white/70 to-cyan-100/70 shadow-inner border border-cyan-200 backdrop-blur-md flex-1">
           <select value={hour} onChange={e => handleDateChange('hour', e.target.value)} className="appearance-none rounded-lg border-none bg-transparent px-2 py-1 text-xl font-mono focus:ring-2 focus:ring-cyan-200 pr-4" style={{backgroundImage:'none', minWidth:'2.5rem'}}>
             {hours.map(h => <option key={h} value={h}>{h.toString().padStart(2, '0')}</option>)}
           </select>
