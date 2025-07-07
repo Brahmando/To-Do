@@ -1,55 +1,97 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import TaskInput from './components/TaskInput';
 import TaskList from './components/TaskList';
 import CompletedList from './components/CompletedList';
 import DeletedList from './components/DeletedList';
-
+import { getTasks, createTask, completeTask, deleteTask, undoTask } from './services/taskService';
 
 function formatDate(date) {
-  return new Date(date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+ return new Date(date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
 }
 
 function App() {
+
   const [tasks, setTasks] = useState([]);
   const [completed, setCompleted] = useState([]);
   const [deleted, setDeleted] = useState([]);
   const [input, setInput] = useState('');
   const [date, setDate] = useState('');
+ 
+  const handleAdd = async () => {
+ if (!input.trim() || !date) {
+ alert('Please enter a task and select a date.');
+ return; 
+ }
 
-  const handleAdd = () => {
-    if (!input.trim() || !date) return;
-    setTasks([
-      { text: input, date, created: new Date().toISOString(), id: Date.now() },
-      ...tasks,
-    ]);
-    setInput('');
-    setDate('');
+ console.log('trying to add task')
+
+ createTask({ text: input, date })
+      .then(data => {
+        console.log('Task created:', data);
+        
+        setInput('');
+        setDate('');
+        fetchTasks(); // Refetch tasks to update the UI
+      })
+      .catch(error => {
+        console.log('Error creating task:', error);
+        alert('Failed to create a long task.');
+        
+        ;
+      });
   };
 
-  const handleComplete = (id) => {
-    const task = tasks.find((t) => t.id === id);
-    setTasks(tasks.filter((t) => t.id !== id));
-    setCompleted([{ ...task, completedAt: new Date().toISOString() }, ...completed]);
+  const handleComplete = async (_id) => {
+ completeTask(_id)
+      .then(data => {
+        fetchTasks(); // Refetch tasks to update the UI 
+      })
+      .catch(error => {
+        alert('Failed to complete task.');
+      });
   };
 
   const handleDelete = (id, from = 'tasks') => {
-    let task;
-    if (from === 'tasks') {
-      task = tasks.find((t) => t.id === id);
-      setTasks(tasks.filter((t) => t.id !== id));
-    } else {
-      task = completed.find((t) => t.id === id);
-      setCompleted(completed.filter((t) => t.id !== id));
-    }
-    setDeleted([{ ...task, deletedAt: new Date().toISOString() }, ...deleted.slice(0, 2)]);
+ deleteTask(id) // Still using 'id' here, will be mapped to _id in service
+      .then(data => { // Should be using _id here as well
+        fetchTasks(); // Refetch tasks to update the UI
+      })
+      .catch(error => {
+        console.error('Error deleting task:', error);
+        alert('Failed to delete task.');
+      });
   };
 
-  const handleUndo = (id) => {
-    const task = completed.find((t) => t.id === id);
-    if (!task) return;
-    setCompleted(completed.filter((t) => t.id !== id));
-    setTasks([{ ...task, completedAt: undefined }, ...tasks]);
+  // This function might need adjustment based on backend implementation for undo
+  const handleUndo = async (_id) => {
+ undoTask(_id)
+      .then(data => {
+        fetchTasks(); // Refetch tasks to update the UI
+      })
+      .catch(error => {
+        console.error('Error undoing task:', error);
+        alert('Failed to undo task.');
+      });
   };
+
+  const fetchTasks = async () => {
+    console.log('starting to fetch task')
+ getTasks()
+      .then(data => {
+        setTasks(data.filter(task => !task.completed && !task.deleted));
+        setCompleted(data.filter(task => task.completed && !task.deleted));
+        setDeleted(data.filter(task => task.deleted).slice(0, 3)); // Keep last 3 deleted tasks
+      })
+      .catch(error => {
+ console.error('Error fetching tasks:', error);
+ alert('Failed to fetch tasks.');
+      });
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, []); // Fetch tasks on component mount
+
 
   return (
     <div className="flex flex-col items-center py-10 px-2 min-h-screen bg-gradient-to-br from-blue-100 via-white to-cyan-100 font-display">
@@ -75,3 +117,4 @@ function App() {
 }
 
 export default App;
+
